@@ -223,7 +223,7 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspprocess(FMOD_DSP_STATE *dsp_state, unsign
         if(inputsidle && pluginData->shouldGoIdle)
             return FMOD_ERR_DSP_DONTPROCESS;
         
-        
+
         if (outbufferarray)
         {
             outbufferarray->speakermode = FMODHelperMethods::GetSpeakermode(numChans);
@@ -236,7 +236,6 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspprocess(FMOD_DSP_STATE *dsp_state, unsign
     }
 
     pluginData->context->processInlineInterleaved(inbufferarray[0].buffers[0], outbufferarray[0].buffers[0], length);
-    //pluginData->heavyPdObj->process<float*>(inbufferarray[0].buffers[0], numInChans, outbufferarray[0].buffers[0], numChans, length);
 
     if(!pluginData->isInstrument && pluginData->inputsIdle)
     {

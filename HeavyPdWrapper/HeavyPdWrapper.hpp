@@ -108,8 +108,6 @@ public:
     {
         FMOD_DSP_PARAMETER_3DATTRIBUTES* param = (FMOD_DSP_PARAMETER_3DATTRIBUTES*)rawData;
         
-        char buffer[64];
-        
         if(attributeMap & (1 << AttributeTypes::rel_pos))
         {
             obj->sendMessageToReceiverV(0xfa2454f1, 0, "fff",
