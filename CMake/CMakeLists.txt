@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS -Ofast)
 
-file(GLOB HEAVYPD_FILES "../HeavyPdExportDir/c/*")
+file(GLOB HEAVYPD_FILES "../SrcExportDir/c/*")
 file(GLOB WRAPPER_FILES "../HeavyPdWrapper/*")
 
 add_library(${PROJECT_NAME} SHARED ${WRAPPER_FILES} ${HEAVYPD_FILES})
@@ -25,8 +25,8 @@ else()
  set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ../BuildProducts)
 endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE ../../inc/)
-target_include_directories(${PROJECT_NAME} PRIVATE ../HeavyPdExportDir/c/)
+target_include_directories(${PROJECT_NAME} PRIVATE ./inc/)
+target_include_directories(${PROJECT_NAME} PRIVATE ../SrcExportDir/c/)
 target_include_directories(${PROJECT_NAME} PRIVATE ../HeavyPdWrapper/)
 
 
