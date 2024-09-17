@@ -23,6 +23,7 @@
 #include "fmod.hpp"
 #include <vector>
 #include <map>
+#include <memory>
 
 #include DYN_HEADER
 
