@@ -24,6 +24,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <unordered_map>
 
 #include DYN_HEADER
 
