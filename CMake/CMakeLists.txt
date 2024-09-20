@@ -14,7 +14,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS -Ofast)
 
-file(GLOB HEAVYPD_FILES "../SrcExportDir/c/*")
+if(EXISTS "../SrcExportDir/c")
+	set(SRC_INCLUDE "../SrcExportDir/c/*")
+	set(SRC_INCLUDE_DIR "../SrcExportDir/c/")
+else()
+	set(SRC_INCLUDE "../SrcExportDir/*")
+	set(SRC_INCLUDE_DIR "../SrcExportDir/")
+endif()
+
+file(GLOB HEAVYPD_FILES ${SRC_INCLUDE})
 file(GLOB WRAPPER_FILES "../HeavyPdWrapper/*")
 
 add_library(${PROJECT_NAME} SHARED ${WRAPPER_FILES} ${HEAVYPD_FILES})
@@ -26,7 +34,7 @@ else()
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ./inc/)
-target_include_directories(${PROJECT_NAME} PRIVATE ../SrcExportDir/c/)
+target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ../HeavyPdWrapper/)
 
 
