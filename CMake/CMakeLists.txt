@@ -14,6 +14,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS -Ofast)
 
+message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "Current binary dir: ${CMAKE_CURRENT_BINARY_DIR}")
+
 if(EXISTS "../SrcExportDir/c/")
 	set(SRC_INCLUDE "../SrcExportDir/c/*")
 	set(SRC_INCLUDE_DIR "../SrcExportDir/c/")
