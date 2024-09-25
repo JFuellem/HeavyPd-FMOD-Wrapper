@@ -34,7 +34,7 @@ static bool FMOD_HEAVYPD_Running = false;
 struct UserDataStruct
 {
     size_t attributesIndex;
-    size_t tailLength;
+    float tailLength;
     bool isInstrument;
     uint32_t attributeBitmap;
     std::map<int, uint32_t> parameterIndexToHash;
@@ -85,8 +85,6 @@ extern "C"
         const char* name = dummyObj.getName();
         strcpy(FMOD_HEAVYPD_Desc.name, name);
         
-        //get tail setting
-        
         //get number of parameters
         int numParameters = dummyObj.getParameterInfo(0, nullptr);
         
@@ -107,6 +105,11 @@ extern "C"
                 int attributeIndex = FMODHelperMethods::stringToAttribute.at(info.name);
                 userData.attributeBitmap |= 1 << attributeIndex;
                 hasAny3dAttributes = true;
+            }
+            else if (std::char_traits<char>::compare(info.name, "Sys_tail", 8) == 0)
+            {
+                //get tail setting
+                userData.tailLength = info.minVal;
             }
             else
             {
@@ -157,6 +160,7 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspcreate(FMOD_DSP_STATE *dsp_state)
     }
     HeavyPdWrapper *pluginData = (HeavyPdWrapper *)dsp_state->plugindata;
     FMOD_DSP_GETSAMPLERATE(dsp_state, &pluginData->sampleRate);
+    pluginData->sampleRateConversionFactor = pluginData->sampleRate / 1000;
     pluginData->Init(pluginData->sampleRate);
     
     void *rawData;
@@ -168,13 +172,14 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspcreate(FMOD_DSP_STATE *dsp_state)
         pluginData->isInstrument = userData->isInstrument;
     }
     
-    FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","NumParams is %i", FMOD_HEAVYPD_Desc.numparameters);
+    //FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","NumParams is %i", FMOD_HEAVYPD_Desc.numparameters);
     
     /*
     FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Samprate is %i", pluginData->sampleRate);
     FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Tail is %ims", pluginData->tailLength);
     FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Is Instrument: %i", pluginData->isInstrument);
      */
+    //FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Tail: %f", pluginData->tailLength);
     
     return FMOD_OK;
 }
@@ -247,7 +252,7 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspprocess(FMOD_DSP_STATE *dsp_state, unsign
             
         if (CheckIfOutputQuiet(outbufferarray[0].buffers[0], length, numChans))
         {
-            pluginData->shouldGoIdle = (pluginData->context->getCurrentSample() - pluginData->timeStore) > pluginData->tailLength;
+            pluginData->shouldGoIdle = (pluginData->context->getCurrentSample() - pluginData->timeStore) > (pluginData->tailLength * pluginData->sampleRateConversionFactor);
         }
         else
         {
@@ -257,7 +262,10 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspprocess(FMOD_DSP_STATE *dsp_state, unsign
     /*
     static size_t counter = 0;
     if (counter % 500 == 0)
+    {
         FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Proc","Idle: %i", inputsidle);
+        FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Proc","Idle: %d", pluginData->context->getCurrentSample());
+    }
     counter++;
     */
     return FMOD_OK;

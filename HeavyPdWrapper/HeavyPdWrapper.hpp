@@ -8,7 +8,7 @@
 #ifndef HeavyPdWrapper_hpp
 #define HeavyPdWrapper_hpp
 
-#define DYN_NAME Sine440
+#define DYN_NAME SimpleGain
 
 #define EXPAND(x) x
 #define CONCAT_EXP(a, b) a ## b
@@ -39,8 +39,9 @@ public:
     FMOD_BOOL lastIdleState = 0;
     bool shouldGoIdle = false;
     size_t timeStore = 0;
-    size_t tailLength = 0;
+    float tailLength = 0;
     int sampleRate;
+    float sampleRateConversionFactor;
     HeavyPdWrapper();
     ~HeavyPdWrapper();
     void Init(int sr);
