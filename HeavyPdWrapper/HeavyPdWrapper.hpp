@@ -28,12 +28,14 @@
 
 #include DYN_HEADER
 
+#define MAX_CHANS 12
+
 class HeavyPdWrapper
 {
 public:
     //HeavyContextInterface *patchInstance;
     //Heavy_Sine440 context;
-    std::unique_ptr<DYN_TYPE> context;
+    std::vector<std::unique_ptr<DYN_TYPE>> context;
     bool isInstrument;
     FMOD_BOOL inputsIdle = 0;
     FMOD_BOOL lastIdleState = 0;
@@ -42,9 +44,15 @@ public:
     float tailLength = 0;
     int sampleRate;
     float sampleRateConversionFactor;
+    
+    bool multiChannelExpandable;
+    float* deInterleaveBuffer;
+    float* interleaveBuffer;
+    size_t lastChannelCount = -1;
+    
     HeavyPdWrapper();
     ~HeavyPdWrapper();
-    void Init(int sr);
+    void Init();
 };
 
 static inline bool CheckIfOutputQuiet(float* outarray,size_t buffsize, size_t numchans)

@@ -12,9 +12,16 @@ HeavyPdWrapper::HeavyPdWrapper()
     //patchInstance = hv_Sine440_new(sr);
 }
 
-void HeavyPdWrapper::Init(int sr)
+void HeavyPdWrapper::Init()
 {
-    context = std::make_unique<DYN_TYPE>(sr);
+    size_t c(0);
+    do
+    {
+        context.push_back(std::make_unique<DYN_TYPE>(sampleRate));
+        c++;
+    } while (multiChannelExpandable && c<MAX_CHANS);
+    
+    //context = std::make_unique<DYN_TYPE>(sampleRate);
 }
 
 const std::unordered_map<const char*, FMODHelperMethods::AttributeTypes> FMODHelperMethods::stringToAttribute = {

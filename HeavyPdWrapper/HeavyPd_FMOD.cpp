@@ -38,6 +38,7 @@ struct UserDataStruct
     bool isInstrument;
     uint32_t attributeBitmap;
     std::map<int, uint32_t> parameterIndexToHash;
+    bool multiChannelExtendable;
 };
 static UserDataStruct userData;
 FMOD_DSP_PARAMETER_DESC *FMOD_HEAVYPD_dspparam[MAX_HEAVYPD_PARAMETERS] = {};
@@ -135,6 +136,8 @@ extern "C"
         {
             FMOD_HEAVYPD_Desc.numinputbuffers = 1;
             userData.isInstrument = false;
+            
+            userData.multiChannelExtendable = dummyObj.getNumInputChannels() == 1 && dummyObj.getNumOutputChannels() == 1;
         }
         else
         {
@@ -161,8 +164,8 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspcreate(FMOD_DSP_STATE *dsp_state)
     HeavyPdWrapper *pluginData = (HeavyPdWrapper *)dsp_state->plugindata;
     FMOD_DSP_GETSAMPLERATE(dsp_state, &pluginData->sampleRate);
     pluginData->sampleRateConversionFactor = pluginData->sampleRate / 1000;
-    pluginData->Init(pluginData->sampleRate);
     
+    /*
     void *rawData;
     FMOD_DSP_GETUSERDATA(dsp_state, &rawData);
     auto *userData = static_cast<UserDataStruct*>(rawData);
@@ -171,6 +174,14 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspcreate(FMOD_DSP_STATE *dsp_state)
         pluginData->tailLength = userData->tailLength;
         pluginData->isInstrument = userData->isInstrument;
     }
+    */
+    
+    auto userData = static_cast<UserDataStruct*>(FMOD_HEAVYPD_Desc.userdata);
+    pluginData->tailLength = userData->tailLength;
+    pluginData->isInstrument = userData->isInstrument;
+    pluginData->multiChannelExpandable = userData->multiChannelExtendable;
+    pluginData->Init();
+
     
     //FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","NumParams is %i", FMOD_HEAVYPD_Desc.numparameters);
     
@@ -180,6 +191,7 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspcreate(FMOD_DSP_STATE *dsp_state)
     FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Is Instrument: %i", pluginData->isInstrument);
      */
     //FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Tail: %f", pluginData->tailLength);
+    //FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Expandable?: %d", pluginData->multiChannelExpandable);
     
     return FMOD_OK;
 }
@@ -205,8 +217,9 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspprocess(FMOD_DSP_STATE *dsp_state, unsign
 {
     HeavyPdWrapper *pluginData = (HeavyPdWrapper *)dsp_state->plugindata;
     
-    auto numChans = pluginData->context->getNumOutputChannels();
-    auto numInChans = pluginData->context->getNumInputChannels();
+    auto numChans = pluginData->context[0]->getNumOutputChannels();
+    auto numInChans = pluginData->context[0]->getNumInputChannels();
+    
     
     if(op == FMOD_DSP_PROCESS_QUERY)
     {
@@ -215,33 +228,85 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspprocess(FMOD_DSP_STATE *dsp_state, unsign
         if (!outbufferarray)
             return FMOD_ERR_DSP_DONTPROCESS;
         
-        if(numInChans > 0)
+        if(numInChans > 1)
             if (inbufferarray->buffernumchannels[0] != (int)numInChans)
                 return FMOD_ERR_DSP_DONTPROCESS;
         
+        if(pluginData->multiChannelExpandable)
+        {
+            auto chans = inbufferarray->buffernumchannels[0];
+            
+            if (chans != pluginData->lastChannelCount)
+            {
+                pluginData->lastChannelCount = chans;
+                
+                if(pluginData->deInterleaveBuffer)
+                    delete[] pluginData->deInterleaveBuffer;
+                if(pluginData->interleaveBuffer)
+                    delete[] pluginData->interleaveBuffer;
+                
+                pluginData->deInterleaveBuffer = new float[length * chans];
+                pluginData->interleaveBuffer = new float[length * chans];
+            }
+            
+            outbufferarray->speakermode = FMODHelperMethods::GetSpeakermode(chans);
+            outbufferarray->buffernumchannels[0] = chans;
+        }
+        else
+        {
+            outbufferarray->speakermode = FMODHelperMethods::GetSpeakermode(numChans);
+            outbufferarray->buffernumchannels[0] = (int)numChans;
+        }
+        
         if(inputsidle != pluginData->lastIdleState)
         {
-            pluginData->timeStore = pluginData->context->getCurrentSample();
+            pluginData->timeStore = pluginData->context[0]->getCurrentSample();
             pluginData->shouldGoIdle = false;
         }
         
         if(inputsidle && pluginData->shouldGoIdle)
             return FMOD_ERR_DSP_DONTPROCESS;
         
-
-        if (outbufferarray)
-        {
-            outbufferarray->speakermode = FMODHelperMethods::GetSpeakermode(numChans);
-            outbufferarray->buffernumchannels[0] = (int)numChans;
-        }
-        
         pluginData->lastIdleState = inputsidle;
         
         return FMOD_OK;
     }
 
-    pluginData->context->processInlineInterleaved(inbufferarray[0].buffers[0], outbufferarray[0].buffers[0], length);
-
+    if(pluginData->multiChannelExpandable)
+    {
+        auto chans = inbufferarray->buffernumchannels[0];
+        
+        //de-interleave
+        for(size_t i(0);i<length;i++)
+        {
+            for(size_t c(0);c<chans;c++)
+            {
+                pluginData->deInterleaveBuffer[c*length + i] = inbufferarray[0].buffers[0][chans*i + c];
+            }
+        }
+        
+        //process
+        for(size_t i(0);i<chans;i++)
+        {
+            pluginData->context[i]->processInline(&pluginData->deInterleaveBuffer[i*length], &pluginData->interleaveBuffer[i*length], length);
+        }
+        
+        //interleave
+        for(size_t c(0);c<chans;c++)
+        {
+            for(size_t i(0);i<length;i++)
+            {
+                outbufferarray[0].buffers[0][c + chans*i] = pluginData->interleaveBuffer[c*length + i];
+            }
+        }
+        
+    }
+    else
+    {
+        pluginData->context[0]->processInlineInterleaved(inbufferarray[0].buffers[0], outbufferarray[0].buffers[0], length);
+    }
+    
+    
     if(!pluginData->isInstrument && pluginData->inputsIdle)
     {
         if (pluginData->tailLength <= 0)
@@ -252,11 +317,11 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspprocess(FMOD_DSP_STATE *dsp_state, unsign
             
         if (CheckIfOutputQuiet(outbufferarray[0].buffers[0], length, numChans))
         {
-            pluginData->shouldGoIdle = (pluginData->context->getCurrentSample() - pluginData->timeStore) > (pluginData->tailLength * pluginData->sampleRateConversionFactor);
+            pluginData->shouldGoIdle = (pluginData->context[0]->getCurrentSample() - pluginData->timeStore) > (pluginData->tailLength * pluginData->sampleRateConversionFactor);
         }
         else
         {
-            pluginData->timeStore = pluginData->context->getCurrentSample();
+            pluginData->timeStore = pluginData->context[0]->getCurrentSample();
         }
     }
     /*
@@ -285,7 +350,13 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspsetparamfloat(FMOD_DSP_STATE *dsp_state, 
     if(index < FMOD_HEAVYPD_Desc.numparameters)
     {
         int indexHash = static_cast<UserDataStruct*>(FMOD_HEAVYPD_Desc.userdata)->parameterIndexToHash[index];
-        pluginData->context->sendFloatToReceiver(indexHash, value);
+        
+        if(pluginData->multiChannelExpandable)
+            for(size_t i(0);i<(pluginData->lastChannelCount == 0 ? MAX_CHANS : pluginData->lastChannelCount);i++)
+                pluginData->context[i]->sendFloatToReceiver(indexHash, value);
+        else
+            pluginData->context[0]->sendFloatToReceiver(indexHash, value);
+        
         return FMOD_OK;
     }
     
@@ -317,7 +388,12 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspsetparamdata(FMOD_DSP_STATE *dsp_state, i
     
     if(userData && index == userData->attributesIndex)
     {
-        FMODHelperMethods::Dispatch3DAttributes(pluginData->context.get(), data, userData->attributeBitmap);
+        if(pluginData->multiChannelExpandable)
+            for(size_t i(0);i<pluginData->lastChannelCount;i++)
+                FMODHelperMethods::Dispatch3DAttributes(pluginData->context[i].get(), data, userData->attributeBitmap);
+        else
+            FMODHelperMethods::Dispatch3DAttributes(pluginData->context[0].get(), data, userData->attributeBitmap);
+        
         return FMOD_OK;
     }
     
