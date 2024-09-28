@@ -8,7 +8,7 @@
 #ifndef HeavyPdWrapper_hpp
 #define HeavyPdWrapper_hpp
 
-#define DYN_NAME SimpleGain
+#define DYN_NAME HeavyPdPluginName
 
 #define EXPAND(x) x
 #define CONCAT_EXP(a, b) a ## b
