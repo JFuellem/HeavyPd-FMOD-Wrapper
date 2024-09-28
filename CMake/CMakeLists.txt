@@ -29,6 +29,8 @@ endif()
 file(GLOB HEAVYPD_FILES ${SRC_INCLUDE})
 file(GLOB WRAPPER_FILES "../HeavyPdWrapper/*")
 
+configure_file(${PARENT_DIR}/HeavyPdWrapper/HeavyPdWrapper.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/Modified/HeavyPdWrapper.hpp)
+
 add_library(${PROJECT_NAME} SHARED ${WRAPPER_FILES} ${HEAVYPD_FILES})
 
 if(APPLE OR UNIX)
@@ -40,6 +42,7 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE ./inc/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ../HeavyPdWrapper/)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Modified/)
 
 
 

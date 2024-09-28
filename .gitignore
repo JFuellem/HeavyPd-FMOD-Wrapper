@@ -32,3 +32,5 @@
 *.app
 
 SrcExportDir/c/
+
+CMake/inc/
