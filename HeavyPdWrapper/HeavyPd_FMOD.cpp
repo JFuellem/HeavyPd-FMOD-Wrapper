@@ -94,8 +94,6 @@ extern "C"
         
         bool hasAny3dAttributes = false;
         
-        //UserDataStruct *userData = new UserDataStruct();
-        
         //get somehow the parameter metadata
         for (int i = 0; i<numParameters;i++)
         {
@@ -166,33 +164,11 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspcreate(FMOD_DSP_STATE *dsp_state)
     FMOD_DSP_GETSAMPLERATE(dsp_state, &pluginData->sampleRate);
     pluginData->sampleRateConversionFactor = pluginData->sampleRate / 1000;
     
-    /*
-    void *rawData;
-    FMOD_DSP_GETUSERDATA(dsp_state, &rawData);
-    auto *userData = static_cast<UserDataStruct*>(rawData);
-    if(userData)
-    {
-        pluginData->tailLength = userData->tailLength;
-        pluginData->isInstrument = userData->isInstrument;
-    }
-    */
-    
     auto userData = static_cast<UserDataStruct*>(FMOD_HEAVYPD_Desc.userdata);
     pluginData->tailLength = userData->tailLength;
     pluginData->isInstrument = userData->isInstrument;
     pluginData->multiChannelExpandable = userData->multiChannelExtendable;
     pluginData->Init();
-
-    
-    //FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","NumParams is %i", FMOD_HEAVYPD_Desc.numparameters);
-    
-    /*
-    FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Samprate is %i", pluginData->sampleRate);
-    FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Tail is %ims", pluginData->tailLength);
-    FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Is Instrument: %i", pluginData->isInstrument);
-     */
-    //FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Tail: %f", pluginData->tailLength);
-    //FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Create","Expandable?: %d", pluginData->multiChannelExpandable);
     
     return FMOD_OK;
 }
@@ -200,16 +176,8 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspcreate(FMOD_DSP_STATE *dsp_state)
 FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dsprelease(FMOD_DSP_STATE *dsp_state)
 {
     HeavyPdWrapper *pluginData = (HeavyPdWrapper *)dsp_state->plugindata;
-    /*
-    void* userDataRaw;
-    FMOD_DSP_GETUSERDATA(dsp_state, &userDataRaw);
-    if(userDataRaw)
-    {
-        delete static_cast<UserDataStruct*>(userDataRaw);
-        userDataRaw = nullptr;
-    }
-    */
-    FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Release","%x", pluginData);
+
+    //FMOD_DSP_LOG(dsp_state, FMOD_DEBUG_LEVEL_LOG, "Release","%x", pluginData);
     FMOD_DSP_FREE(dsp_state, pluginData);
     return FMOD_OK;
 }
@@ -366,6 +334,7 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspsetparamfloat(FMOD_DSP_STATE *dsp_state, 
 
 FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspgetparamfloat(FMOD_DSP_STATE *dsp_state, int index, float *value, char *valuestr)
 {
+    //TODO: setting parameters from pd
     /*
     HeavyPdWrapper *pluginData = (HeavyPdWrapper *)dsp_state->plugindata;
 
@@ -403,8 +372,7 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspsetparamdata(FMOD_DSP_STATE *dsp_state, i
 
 FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspgetparamdata(FMOD_DSP_STATE *dsp_state, int index, void ** /*value*/, unsigned int * /*length*/, char * /*valuestr*/)
 {
-    
-
+    //unused callback but not removed
     return FMOD_ERR_INVALID_PARAM;
 }
 

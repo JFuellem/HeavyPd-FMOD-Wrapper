@@ -33,8 +33,6 @@
 class HeavyPdWrapper
 {
 public:
-    //HeavyContextInterface *patchInstance;
-    //Heavy_Sine440 context;
     std::vector<std::unique_ptr<DYN_TYPE>> context;
     bool isInstrument;
     FMOD_BOOL inputsIdle = 0;
