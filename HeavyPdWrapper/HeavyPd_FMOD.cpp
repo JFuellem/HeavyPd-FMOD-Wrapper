@@ -81,7 +81,7 @@ extern "C"
 {
     F_EXPORT FMOD_DSP_DESCRIPTION* F_CALL FMODGetDSPDescription()
     {
-        DYN_TYPE dummyObj(48000);
+        DYN_HV_CONTEXT dummyObj(48000);
         
         //get name of plugin
         const char* name = dummyObj.getName();

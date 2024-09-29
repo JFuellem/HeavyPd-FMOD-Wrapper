@@ -16,8 +16,8 @@
 #define STRINGIFY(x) #x
 #define EXP_A_STR(x) STRINGIFY(x)
 
-#define DYN_TYPE CONCAT(Heavy_, EXPAND(DYN_NAME))
-#define DYN_HEADER EXP_A_STR(DYN_TYPE.hpp)
+#define DYN_HV_CONTEXT CONCAT(Heavy_, EXPAND(DYN_NAME))
+#define DYN_HEADER EXP_A_STR(DYN_HV_CONTEXT.hpp)
 
 #include <stdio.h>
 #include "fmod.hpp"
@@ -33,7 +33,7 @@
 class HeavyPdWrapper
 {
 public:
-    std::vector<std::unique_ptr<DYN_TYPE>> context;
+    std::vector<std::unique_ptr<DYN_HV_CONTEXT>> context;
     bool isInstrument;
     FMOD_BOOL inputsIdle = 0;
     FMOD_BOOL lastIdleState = 0;
@@ -113,7 +113,7 @@ public:
     
     static const std::unordered_map<const char*, AttributeTypes> stringToAttribute;
     
-    static void Dispatch3DAttributes(DYN_TYPE *obj, void* rawData, uint32_t attributeMap)
+    static void Dispatch3DAttributes(DYN_HV_CONTEXT *obj, void* rawData, uint32_t attributeMap)
     {
         FMOD_DSP_PARAMETER_3DATTRIBUTES* param = (FMOD_DSP_PARAMETER_3DATTRIBUTES*)rawData;
         

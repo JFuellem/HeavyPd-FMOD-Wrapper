@@ -16,7 +16,7 @@ void HeavyPdWrapper::Init()
     size_t c(0);
     do
     {
-        context.push_back(std::make_unique<DYN_TYPE>(sampleRate));
+        context.push_back(std::make_unique<DYN_HV_CONTEXT>(sampleRate));
         c++;
     } while (multiChannelExpandable && c<MAX_CHANS);
 }
