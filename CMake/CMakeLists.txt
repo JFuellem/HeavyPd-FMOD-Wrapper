@@ -7,8 +7,6 @@ if(APPLE)
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
 endif()
 
-project(${PLUGIN_NAME})
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -28,6 +26,18 @@ endif()
 
 file(GLOB HEAVYPD_FILES ${SRC_INCLUDE})
 file(GLOB WRAPPER_FILES "../HeavyPdWrapper/*")
+
+foreach(FILE_PATH ${HEAVYPD_FILES})
+	get_filename_component(FILE_NAME ${FILE_PATH} NAME)
+	string(REGEX MATCH "_([^_]+)\\.cpp$" FULL_NAME ${FILE_NAME})
+	if(FULL_NAME)
+		string(REGEX REPLACE "^.*_([^_]+)\\.cpp$" "\\1" PLUGIN_NAME ${FILE_NAME})
+       		break()
+    	endif()
+endforeach()
+
+
+project(${PLUGIN_NAME})
 
 configure_file(${PARENT_DIR}/HeavyPdWrapper/HeavyPdWrapper.hpp.in ${PARENT_DIR}/HeavyPdWrapper/HeavyPdWrapper.hpp)
 
