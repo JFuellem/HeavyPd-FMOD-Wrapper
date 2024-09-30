@@ -44,7 +44,7 @@ If any of those inports are present in the plugin, the event is automatically tu
 
 1. Clone Repo and Download FMOD-API. Copy the FMOD api/core/inc folder into the CMake folder.
 2. cd to the CMake folder ```cd CMake```
-3. ```cmake -S . -B <SomeFolder> -DPLUGIN_NAME=<PluginName>```
+3. ```cmake -S . -B <SomeFolder>```
 4. ```cmake --build <SomeFolder>```
 
 ## Things to consider
