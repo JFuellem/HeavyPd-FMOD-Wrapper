@@ -121,15 +121,15 @@ public:
         {
             obj->sendMessageToReceiverV(0xfa2454f1, 0, "fff",
                                                           param->relative.position.x,
-                                                          param->relative.position.x,
-                                                          param->relative.position.x);
+                                                          param->relative.position.y,
+                                                          param->relative.position.z);
         }
         if(attributeMap & (1 << AttributeTypes::rel_vel))
         {
             obj->sendMessageToReceiverV(0xe114e737, 0, "fff",
                                                           param->relative.velocity.x,
-                                                          param->relative.velocity.x,
-                                                          param->relative.velocity.x);
+                                                          param->relative.velocity.y,
+                                                          param->relative.velocity.z);
         }
         if(attributeMap & (1 << AttributeTypes::rel_forw))
         {
@@ -149,8 +149,8 @@ public:
         {
             obj->sendMessageToReceiverV(0x6e9bd486, 0, "fff",
                                                           param->absolute.position.x,
-                                                          param->absolute.position.x,
-                                                          param->absolute.position.x);
+                                                          param->absolute.position.y,
+                                                          param->absolute.position.z);
         }
         if(attributeMap & (1 << AttributeTypes::abs_vel))
         {
