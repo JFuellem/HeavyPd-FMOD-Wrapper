@@ -100,15 +100,14 @@ extern "C"
             HvParameterInfo info;
             dummyObj.getParameterInfo(i, &info);
             
-            if(FMODHelperMethods::stringToAttribute.contains(info.name))
+            if(RNBOFMODHelpers::stringToAttribute.contains(info.name))
             {
-                int attributeIndex = FMODHelperMethods::stringToAttribute.at(info.name);
+                int attributeIndex = RNBOFMODHelpers::stringToAttribute.at(info.name);
                 userData.attributeBitmap |= 1 << attributeIndex;
                 hasAny3dAttributes = true;
             }
             else if (std::char_traits<char>::compare(info.name, "Sys_tail", 8) == 0)
             {
-                //get tail setting
                 userData.tailLength = info.minVal;
             }
             else
@@ -186,9 +185,8 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspprocess(FMOD_DSP_STATE *dsp_state, unsign
 {
     HeavyPdWrapper *pluginData = (HeavyPdWrapper *)dsp_state->plugindata;
     
-    auto numChans = pluginData->context[0]->getNumOutputChannels();
-    auto numInChans = pluginData->context[0]->getNumInputChannels();
-    
+    auto numHVOutChans = pluginData->context[0]->getNumOutputChannels();
+    auto numHVInChans = pluginData->context[0]->getNumInputChannels();
     
     if(op == FMOD_DSP_PROCESS_QUERY)
     {
@@ -197,8 +195,8 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspprocess(FMOD_DSP_STATE *dsp_state, unsign
         if (!outbufferarray)
             return FMOD_ERR_DSP_DONTPROCESS;
         
-        if(numInChans > 1)
-            if (inbufferarray->buffernumchannels[0] != (int)numInChans)
+        if(numHVInChans > 1)
+            if (inbufferarray->buffernumchannels[0] != (int)numHVInChans)
                 return FMOD_ERR_DSP_DONTPROCESS;
         
         if(pluginData->multiChannelExpandable)
@@ -218,13 +216,13 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspprocess(FMOD_DSP_STATE *dsp_state, unsign
                 pluginData->interleaveBuffer = new float[length * chans];
             }
             
-            outbufferarray->speakermode = FMODHelperMethods::GetSpeakermode(chans);
+            outbufferarray->speakermode = RNBOFMODHelpers::GetSpeakermode(chans);
             outbufferarray->buffernumchannels[0] = chans;
         }
         else
         {
-            outbufferarray->speakermode = FMODHelperMethods::GetSpeakermode(numChans);
-            outbufferarray->buffernumchannels[0] = (int)numChans;
+            outbufferarray->speakermode = RNBOFMODHelpers::GetSpeakermode(numHVOutChans);
+            outbufferarray->buffernumchannels[0] = (int)numHVOutChans;
         }
         
         if(inputsidle != pluginData->lastIdleState)
@@ -284,7 +282,7 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspprocess(FMOD_DSP_STATE *dsp_state, unsign
             return FMOD_OK;
         }
             
-        if (CheckIfOutputQuiet(outbufferarray[0].buffers[0], length, numChans))
+        if (RNBOFMODHelpers::CheckIfOutputQuiet(outbufferarray[0].buffers[0], length, numHVOutChans))
         {
             pluginData->shouldGoIdle = (pluginData->context[0]->getCurrentSample() - pluginData->timeStore) > (pluginData->tailLength * pluginData->sampleRateConversionFactor);
         }
@@ -335,16 +333,14 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspsetparamfloat(FMOD_DSP_STATE *dsp_state, 
 FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspgetparamfloat(FMOD_DSP_STATE *dsp_state, int index, float *value, char *valuestr)
 {
     //TODO: setting parameters from pd
-    /*
+    
     HeavyPdWrapper *pluginData = (HeavyPdWrapper *)dsp_state->plugindata;
 
     if(index < FMOD_HEAVYPD_Desc.numparameters)
     {
-        HvParameterInfo info;
-        pluginData->context->getParameterInfo(index, &info);
         
     }
-    */
+    
     return FMOD_ERR_INVALID_PARAM;
 }
 
@@ -360,9 +356,9 @@ FMOD_RESULT F_CALLBACK FMOD_HEAVYPD_dspsetparamdata(FMOD_DSP_STATE *dsp_state, i
     {
         if(pluginData->multiChannelExpandable)
             for(size_t i(0);i<pluginData->lastChannelCount;i++)
-                FMODHelperMethods::Dispatch3DAttributes(pluginData->context[i].get(), data, userData->attributeBitmap);
+                RNBOFMODHelpers::Dispatch3DAttributes(pluginData->context[i].get(), data, userData->attributeBitmap);
         else
-            FMODHelperMethods::Dispatch3DAttributes(pluginData->context[0].get(), data, userData->attributeBitmap);
+            RNBOFMODHelpers::Dispatch3DAttributes(pluginData->context[0].get(), data, userData->attributeBitmap);
         
         return FMOD_OK;
     }

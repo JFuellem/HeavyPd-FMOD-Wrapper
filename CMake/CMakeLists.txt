@@ -26,6 +26,7 @@ endif()
 
 file(GLOB HEAVYPD_FILES ${SRC_INCLUDE})
 file(GLOB WRAPPER_FILES "../HeavyPdWrapper/*")
+file(GLOB GENERATED_FILES "${CMAKE_BINARY_DIR}/HeavyPdWrapper/generated/*")
 
 foreach(FILE_PATH ${HEAVYPD_FILES})
 	get_filename_component(FILE_NAME ${FILE_PATH} NAME)
@@ -39,9 +40,9 @@ endforeach()
 
 project(${PLUGIN_NAME})
 
-configure_file(${PARENT_DIR}/HeavyPdWrapper/HeavyPdWrapper.hpp.in ${PARENT_DIR}/HeavyPdWrapper/HeavyPdWrapper.hpp)
+configure_file(${PARENT_DIR}/HeavyPdWrapper/HeavyPdWrapper.hpp.in ${CMAKE_BINARY_DIR}/HeavyPdWrapper/generated/HeavyPdWrapper.hpp)
 
-add_library(${PROJECT_NAME} SHARED ${WRAPPER_FILES} ${HEAVYPD_FILES})
+add_library(${PROJECT_NAME} SHARED ${WRAPPER_FILES} ${HEAVYPD_FILES} ${GENERATED_FILES})
 
 if(APPLE OR UNIX)
  set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ../BuildProducts)
@@ -52,6 +53,8 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE ./inc/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ../HeavyPdWrapper/)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/HeavyPdWrapper/generated/)
+
 
 
 

@@ -1,34 +1,4 @@
-/**
- * Copyright (c) 2024 Enzien Audio, Ltd.
- * 
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- * 
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions, and the following disclaimer.
- * 
- * 2. Redistributions in binary form must reproduce the phrase "powered by heavy",
- *    the heavy logo, and a hyperlink to https://enzienaudio.com, all in a visible
- *    form.
- * 
- *   2.1 If the Application is distributed in a store system (for example,
- *       the Apple "App Store" or "Google Play"), the phrase "powered by heavy"
- *       shall be included in the app description or the copyright text as well as
- *       the in the app itself. The heavy logo will shall be visible in the app
- *       itself as well.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- */
+/** "SomeCopyright" */
 
 #include "Heavy_SampleSrc.hpp"
 
@@ -83,7 +53,9 @@ extern "C" {
 
 Heavy_SampleSrc::Heavy_SampleSrc(double sampleRate, int poolKb, int inQueueKb, int outQueueKb)
     : HeavyContext(sampleRate, poolKb, inQueueKb, outQueueKb) {
-  numBytes += sLine_init(&sLine_saKGjAn1);
+  numBytes += sLine_init(&sLine_ZMQbuccH);
+  numBytes += sPhasor_k_init(&sPhasor_MNXiNfyY, 1.0f, sampleRate);
+  numBytes += sSample_init(&sSample_TsQLJbpI);
   
 }
 
@@ -98,15 +70,11 @@ HvTable *Heavy_SampleSrc::getTableForHash(hv_uint32_t tableHash) {
 void Heavy_SampleSrc::scheduleMessageForReceiver(hv_uint32_t receiverHash, HvMessage *m) {
   switch (receiverHash) {
     case 0x14D21442: { // Sys_tail
-      mq_addMessageByTimestamp(&mq, m, 0, &cReceive_b2c2VWmf_sendMessage);
-      break;
-    }
-    case 0xB22FD2ED: { // Syst_tail_test
-      mq_addMessageByTimestamp(&mq, m, 0, &cReceive_cMf69FNK_sendMessage);
+      mq_addMessageByTimestamp(&mq, m, 0, &cReceive_g3etf9Uf_sendMessage);
       break;
     }
     case 0x8559698F: { // vol
-      mq_addMessageByTimestamp(&mq, m, 0, &cReceive_FayiFbnB_sendMessage);
+      mq_addMessageByTimestamp(&mq, m, 0, &cReceive_LdjqwoQZ_sendMessage);
       break;
     }
     default: return;
@@ -155,31 +123,32 @@ int Heavy_SampleSrc::getParameterInfo(int index, HvParameterInfo *info) {
  */
 
 
-void Heavy_SampleSrc::cMsg_KBrNyPIP_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *const n) {
+void Heavy_SampleSrc::sSample_TsQLJbpI_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *m) {
+  cSend_ZpamRBG9_sendMessage(_c, 0, m);
 }
 
-void Heavy_SampleSrc::cMsg_ThVlHGPn_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *const n) {
+void Heavy_SampleSrc::cMsg_dsRM3B4K_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *const n) {
+}
+
+void Heavy_SampleSrc::cMsg_BdWW7IeP_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *const n) {
   HvMessage *m = nullptr;
   m = HV_MESSAGE_ON_STACK(2);
   msg_init(m, 2, msg_getTimestamp(n));
   msg_setElementToFrom(m, 0, n, 0);
   msg_setFloat(m, 1, 50.0f);
-  sLine_onMessage(_c, &Context(_c)->sLine_saKGjAn1, 0, m, NULL);
+  sLine_onMessage(_c, &Context(_c)->sLine_ZMQbuccH, 0, m, NULL);
 }
 
-void Heavy_SampleSrc::cMsg_1I7kmr8J_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *const n) {
+void Heavy_SampleSrc::cSend_ZpamRBG9_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *m) {
+  if (_c->getSendHook() != nullptr) _c->getSendHook()(_c, "sendTestVolume", 0x311E9A92, m);
 }
 
-void Heavy_SampleSrc::cReceive_cMf69FNK_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *m) {
-  cMsg_1I7kmr8J_sendMessage(_c, 0, m);
+void Heavy_SampleSrc::cReceive_g3etf9Uf_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *m) {
+  cMsg_dsRM3B4K_sendMessage(_c, 0, m);
 }
 
-void Heavy_SampleSrc::cReceive_FayiFbnB_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *m) {
-  cMsg_ThVlHGPn_sendMessage(_c, 0, m);
-}
-
-void Heavy_SampleSrc::cReceive_b2c2VWmf_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *m) {
-  cMsg_KBrNyPIP_sendMessage(_c, 0, m);
+void Heavy_SampleSrc::cReceive_LdjqwoQZ_sendMessage(HeavyContextInterface *_c, int letIn, const HvMessage *m) {
+  cMsg_BdWW7IeP_sendMessage(_c, 0, m);
 }
 
 
@@ -202,7 +171,7 @@ int Heavy_SampleSrc::process(float **inputBuffers, float **outputBuffers, int n)
   const int n4 = n & ~HV_N_SIMD_MASK; // ensure that the block size is a multiple of HV_N_SIMD
 
   // temporary signal vars
-  hv_bufferf_t Bf0;
+  hv_bufferf_t Bf0, Bf1, Bf2, Bf3, Bf4;
 
   // input and output vars
   hv_bufferf_t O0;
@@ -229,9 +198,25 @@ int Heavy_SampleSrc::process(float **inputBuffers, float **outputBuffers, int n)
     __hv_zero_f(VOf(O0));
 
     // process all signal functions
-    __hv_line_f(&sLine_saKGjAn1, VOf(Bf0));
+    __hv_line_f(&sLine_ZMQbuccH, VOf(Bf0));
     __hv_mul_f(VIf(I0), VIf(Bf0), VOf(Bf0));
     __hv_add_f(VIf(Bf0), VIf(O0), VOf(O0));
+    __hv_phasor_k_f(&sPhasor_MNXiNfyY, VOf(Bf0));
+    __hv_var_k_f(VOf(Bf1), 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f);
+    __hv_sub_f(VIf(Bf0), VIf(Bf1), VOf(Bf1));
+    __hv_abs_f(VIf(Bf1), VOf(Bf1));
+    __hv_var_k_f(VOf(Bf0), 0.25f, 0.25f, 0.25f, 0.25f, 0.25f, 0.25f, 0.25f, 0.25f);
+    __hv_sub_f(VIf(Bf1), VIf(Bf0), VOf(Bf0));
+    __hv_var_k_f(VOf(Bf1), 6.283185307179586f, 6.283185307179586f, 6.283185307179586f, 6.283185307179586f, 6.283185307179586f, 6.283185307179586f, 6.283185307179586f, 6.283185307179586f);
+    __hv_mul_f(VIf(Bf0), VIf(Bf1), VOf(Bf1));
+    __hv_mul_f(VIf(Bf1), VIf(Bf1), VOf(Bf0));
+    __hv_mul_f(VIf(Bf1), VIf(Bf0), VOf(Bf2));
+    __hv_mul_f(VIf(Bf2), VIf(Bf0), VOf(Bf0));
+    __hv_var_k_f(VOf(Bf3), 0.007833333333333f, 0.007833333333333f, 0.007833333333333f, 0.007833333333333f, 0.007833333333333f, 0.007833333333333f, 0.007833333333333f, 0.007833333333333f);
+    __hv_var_k_f(VOf(Bf4), -0.166666666666667f, -0.166666666666667f, -0.166666666666667f, -0.166666666666667f, -0.166666666666667f, -0.166666666666667f, -0.166666666666667f, -0.166666666666667f);
+    __hv_fma_f(VIf(Bf2), VIf(Bf4), VIf(Bf1), VOf(Bf1));
+    __hv_fma_f(VIf(Bf0), VIf(Bf3), VIf(Bf1), VOf(Bf1));
+    __hv_sample_f(this, &sSample_TsQLJbpI, VIf(Bf1), &sSample_TsQLJbpI_sendMessage);
 
     // save output vars to output buffer
     __hv_store_f(outputBuffers[0]+n, VIf(O0));
