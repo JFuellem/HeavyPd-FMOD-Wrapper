@@ -26,7 +26,6 @@ endif()
 
 file(GLOB HEAVYPD_FILES ${SRC_INCLUDE})
 file(GLOB WRAPPER_FILES "../HeavyPdWrapper/*")
-file(GLOB GENERATED_FILES "${CMAKE_BINARY_DIR}/HeavyPdWrapper/generated/*")
 
 foreach(FILE_PATH ${HEAVYPD_FILES})
 	get_filename_component(FILE_NAME ${FILE_PATH} NAME)
@@ -41,6 +40,7 @@ endforeach()
 project(${PLUGIN_NAME})
 
 configure_file(${PARENT_DIR}/HeavyPdWrapper/HeavyPdWrapper.hpp.in ${CMAKE_BINARY_DIR}/HeavyPdWrapper/generated/HeavyPdWrapper.hpp)
+file(GLOB GENERATED_FILES "${CMAKE_BINARY_DIR}/HeavyPdWrapper/generated/*")
 
 add_library(${PROJECT_NAME} SHARED ${WRAPPER_FILES} ${HEAVYPD_FILES} ${GENERATED_FILES})
 
