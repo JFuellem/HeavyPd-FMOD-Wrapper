@@ -48,6 +48,7 @@ file(GLOB GENERATED_FILES "${CMAKE_BINARY_DIR}/HeavyPdWrapper/generated/*")
 
 #make library for potential multiple targets
 add_library(oLib OBJECT ${WRAPPER_FILES} ${HEAVYPD_FILES} ${GENERATED_FILES})
+set_target_properties(oLib PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:oLib>)
 
