@@ -3,6 +3,7 @@
 
 cmake_minimum_required(VERSION 3.10.0)
 
+#Make fat binary for apple to work on both intel and arm
 if(APPLE)
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
 endif()
@@ -37,12 +38,27 @@ foreach(FILE_PATH ${HEAVYPD_FILES})
 endforeach()
 
 
+
+
+
 project(${PLUGIN_NAME})
 
 configure_file(${PARENT_DIR}/HeavyPdWrapper/HeavyPdWrapper.hpp.in ${CMAKE_BINARY_DIR}/HeavyPdWrapper/generated/HeavyPdWrapper.hpp)
 file(GLOB GENERATED_FILES "${CMAKE_BINARY_DIR}/HeavyPdWrapper/generated/*")
 
-add_library(${PROJECT_NAME} SHARED ${WRAPPER_FILES} ${HEAVYPD_FILES} ${GENERATED_FILES})
+#make library for potential multiple targets
+add_library(oLib OBJECT ${WRAPPER_FILES} ${HEAVYPD_FILES} ${GENERATED_FILES})
+
+add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:oLib>)
+
+if(APPLE)
+	add_library(${PROJECT_NAME}_bundle MODULE $<TARGET_OBJECTS:oLib>)
+	set_target_properties(${PROJECT_NAME}_bundle PROPERTIES
+		BUNDLE TRUE
+		OUTPUT_NAME "${PROJECT_NAME}"
+		LIBRARY_OUTPUT_DIRECTORY "../BuildProducts"
+	)
+endif()
 
 if(APPLE OR UNIX)
  set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ../BuildProducts)
@@ -50,10 +66,11 @@ else()
  set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ../BuildProducts)
 endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE ./inc/)
-target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ../HeavyPdWrapper/)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/HeavyPdWrapper/generated/)
+target_include_directories(oLib PRIVATE ./inc/)
+target_include_directories(oLib PRIVATE ${SRC_INCLUDE_DIR})
+target_include_directories(oLib PRIVATE ../HeavyPdWrapper/)
+target_include_directories(oLib PRIVATE ${CMAKE_BINARY_DIR}/HeavyPdWrapper/generated/)
+
 
 
 
